@@ -19,9 +19,10 @@ const db = mysql.createConnection(
         user: 'root',
         // MySQL password
         password: 'WellyisC00l!',
-        database: 'inventory_db'
+        database: 'team_db'
+        
     },
-    console.log(`Connected to the inventory_db database.`)
+    console.log(`Connected to the team_db database.`)
 );
 
 
@@ -39,8 +40,7 @@ const promptInit = () => {
     )
         .then(({ type }) => {
             if (type === 'View all employees') {
-                viewEmployees()  
-                                         
+                return viewEmployees()                  
             } else if (type === 'View all employees by department') {
                 return viewEmployeesByDept();
             } else if (type === 'Quit') {
@@ -59,8 +59,28 @@ const viewEmployees = () => {
 
     
     // Query database
-    db.query('SELECT * FROM books', function (err, results) {
+    db.query('SELECT * FROM roles', function (err, results) {
         console.table(results)
+        return promptInit(); 
+    });
+    
+
+    // Default response for any other request (Not Found)
+    app.use((req, res) => {
+        res.status(404).end();
+    });
+    
+    
+    
+};
+
+const viewEmployeesByDept = () => {
+
+    
+    // Query database
+    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id)
+         VALUES ('AJ', 'Smith', 2, 2)`, function (err, results) {
+        //console.table(results)
         return promptInit(); 
     });
     
