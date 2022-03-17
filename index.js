@@ -12,6 +12,24 @@ const app = express();
 // app.use(express.urlencoded({ extended: false }));
 // app.use(express.json());
 
+
+// Starter Title
+const CFonts = require('cfonts');
+CFonts.say('Police|Database', {
+	font: 'chrome',              // define the font face
+	align: 'left',              // define text alignment
+	colors: ['blue', 'white'],         // define all colors
+	background: 'transparent',  // define the background color, you can also use `backgroundColor` here as key
+	letterSpacing: 1,           // define letter spacing
+	lineHeight: 1,              // define the line height
+	space: true,                // define if the output text should have empty lines on top and on the bottom
+	maxLength: '0',             // define how many character can be on one line
+	gradient: ['blue', 'white'],            // define your two gradient colors
+	independentGradient: true, // define if you want to recalculate the gradient for each new line
+	transitionGradient: true,  // define if this is a transition between colors directly
+	env: 'node'                 // define the environment CFonts is being executed in
+});
+
 // Connect to database
 const db = mysql.createConnection(
     {
@@ -20,10 +38,10 @@ const db = mysql.createConnection(
         user: 'root',
         // MySQL password
         password: 'WellyisC00l!',
-        database: 'team_db'
+        database: 'police_db'
 
     },
-    console.log(`Connected to the team_db database.`)
+    console.log(`Connected to the police_db database.`)
 );
 
 
@@ -36,24 +54,24 @@ const promptInit = () => {
             type: 'list',
             message: 'What would you like to do?',
             name: 'type',
-            choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update employee role', 'Quit']
+            choices: ['View all crews', 'View all roles', 'View all suspects', 'Add a crew', 'Add a role', 'Add an suspect', 'Update suspect role', 'Quit']
         }
     )
         .then(({ type }) => {
-            if (type === 'View all departments') {
-                return viewDepartments();
+            if (type === 'View all crews') {
+                return viewCrews();
             } else if (type === 'View all roles') {
                 return viewRoles();
-            } else if (type === 'View all employees') {
-                return viewEmployees();
-            } else if (type === 'Add a department') {
-                return addDepartment();
+            } else if (type === 'View all suspects') {
+                return viewSuspect();
+            } else if (type === 'Add a crew') {
+                return addCrew();
             } else if (type === 'Add a role') {
                 return addRole();
-            } else if (type === 'Add an employee') {
-                return addEmployee();
-            } else if (type === 'Update employee role') {
-                return updateEmployeeRole();
+            } else if (type === 'Add an suspect') {
+                return addSuspect();
+            } else if (type === 'Update suspect role') {
+                return updatesuspectRole();
             } else if (type === 'Quit') {
                 return;
             }
@@ -66,9 +84,9 @@ promptInit()
 /////////////Renders Tables/////////////
 
 
-const viewDepartments = () => {
+const viewCrews = () => {
     // Query database
-    db.query('SELECT * FROM department', function (err, results) {
+    db.query('SELECT * FROM crew', function (err, results) {
         console.table(results)
         return promptInit();
     });
@@ -79,8 +97,8 @@ const viewDepartments = () => {
 };
 
 const viewRoles = () => {
-    const sql = `SELECT title, department_id, department_name, salary FROM roles
-                LEFT JOIN department ON roles.department_id = department.id`;
+    const sql = `SELECT title, crew_id, crew_name, salary FROM roles
+                LEFT JOIN crew ON roles.crew_id = crew.id`;
 
     // Query database
     db.query(sql, function (err, results) {
@@ -93,10 +111,10 @@ const viewRoles = () => {
     });
 };
 
-const viewEmployees = () => {
-    const sql = `SELECT employee.id, first_name, last_name, title, department_name, salary, manager_id FROM employee
-                LEFT JOIN roles ON employee.role_id = roles.id
-                LEFT JOIN department ON roles.department_id = department.id`;
+const viewSuspect = () => {
+    const sql = `SELECT suspect.id, first_name, last_name, title, crew_name, salary, manager_id FROM suspect
+                LEFT JOIN roles ON suspect.role_id = roles.id
+                LEFT JOIN crew ON roles.crew_id = crew.id`;
 
     // Query database
     db.query(sql, function (err, results) {
@@ -109,27 +127,27 @@ const viewEmployees = () => {
     });
 };
 
-const addDepartment = () => {
+const addCrew = () => {
 
     inquirer.prompt(
         {
             type: 'input',
-            name: 'departmentInput',
-            message: 'Enter the name of a new department',
+            name: 'crewInput',
+            message: 'Enter the name of a new crew',
             validate: titleInput => {
                 if (titleInput) {
                     return true;
                 } else {
-                    console.log('Please enter a department!');
+                    console.log('Please enter a crew!');
                     return false;
                 }
             }
         }
     )
-        .then(({ departmentInput }) => {
+        .then(({ crewInput }) => {
 
-            const sql = `INSERT INTO department (department_name) VALUES (?)`
-            const params = [departmentInput]
+            const sql = `INSERT INTO crew (crew_name) VALUES (?)`
+            const params = [crewInput]
             // Query database
             db.query(sql, params, function (err, results) {
                 //console.table(results)
@@ -144,10 +162,10 @@ const addDepartment = () => {
 
 const addRole = () => {
 
-    let deptSql = `SELECT * FROM department`;
+    let deptSql = `SELECT * FROM crew`;
     db.query(deptSql, (err, response) => {
         let deptArr = [];
-        response.forEach((department) => { deptArr.push(`${department.department_name}`); });
+        response.forEach((crew) => { deptArr.push(`${crew.crew_name}`); });
 
 
 
@@ -180,25 +198,25 @@ const addRole = () => {
             },
             {
                 type: 'list',
-                name: 'departmentChoice',
-                message: 'Which department is this role affiliated',
+                name: 'crewChoice',
+                message: 'Which crew is this role affiliated',
                 choices: deptArr
 
             }]
         )
-            .then(({ titleInput, salaryInput, departmentChoice }) => {
+            .then(({ titleInput, salaryInput, crewChoice }) => {
 
                 let deptId;
-                response.forEach((department) => {
+                response.forEach((crew) => {
                     if (
-                        departmentChoice === department.department_name
+                        crewChoice === crew.crew_name
                     ) {
-                        deptId = department.id;
+                        deptId = crew.id;
                     }
 
                 });
 
-                const sql = `INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)`
+                const sql = `INSERT INTO roles (title, salary, crew_id) VALUES (?, ?, ?)`
                 const params = [titleInput, salaryInput, deptId]
                 // Query database
                 db.query(sql, params, function (err, results) {
@@ -213,10 +231,10 @@ const addRole = () => {
     })
 };
 
+//ADD suspect
+const addSuspect = () => {
 
-const addEmployee = () => {
-
-    let empSql = `SELECT * FROM employee LEFT JOIN roles ON employee.role_id = roles.id`;
+    let empSql = `SELECT * FROM suspect LEFT JOIN roles ON suspect.role_id = roles.id`;
     db.query(empSql, (err, response) => {
         let managerArr = response.map(({ id, first_name, last_name }) => ({ name: first_name + " " + last_name, value: id }));
 
@@ -229,7 +247,7 @@ const addEmployee = () => {
             [{
                 type: 'input',
                 name: 'fNameInput',
-                message: 'Enter first name of the new employee',
+                message: 'Enter first name of the new suspect',
                 validate: titleInput => {
                     if (titleInput) {
                         return true;
@@ -242,7 +260,7 @@ const addEmployee = () => {
             {
                 type: 'input',
                 name: 'lNameInput',
-                message: 'Enter last name of the new employee',
+                message: 'Enter last name of the new suspect',
                 validate: titleInput => {
                     if (titleInput) {
                         return true;
@@ -251,23 +269,76 @@ const addEmployee = () => {
                         return false;
                     }
                 }
-            },
+            }]
+        )
+            .then(({ fNameInput, lNameInput }) => {
+
+
+                return addSuspectRole(fNameInput, lNameInput);
+            });
+    })
+};
+
+// ADD suspect CONTINUED
+const addSuspectRole = (fNameInput, lNameInput) => {
+
+    let empSql = `SELECT * FROM roles`;
+    db.query(empSql, (err, response) => {
+        
+        let rolesArr = [];
+        response.forEach((roles) => { rolesArr.push(`${roles.title}`); });
+
+        //let rolesArr = response.map(({ id, title,  }) => ({ name: title + " ", value: id }));
+
+        inquirer.prompt(
+            
             {
                 type: 'list',
                 name: 'roleChoice',
-                message: 'Select a role for the employee',
+                message: 'Select a role for the suspect',
                 choices: rolesArr
-            },
-            {
+            }
+        )
+            .then((answer) => {
+
+                let rolesId;
+                response.forEach((roles) => {
+                    if (
+                        answer.roleChoice === roles.title
+                    ) {
+                        rolesId = roles.id;
+                    }
+                });
+
+                
+
+                return addSuspectManager(fNameInput, lNameInput, rolesId);
+            });
+    })
+};
+
+
+// ADD suspect CONTINUED...
+const addSuspectManager = (fNameInput, lNameInput, rolesId) => {
+
+    let empSql = `SELECT * FROM suspect`;
+    db.query(empSql, (err, response) => {
+        
+        let managerArr = response.map(({ id, first_name, last_name }) => ({ name: first_name + " " + last_name, value: id }));
+        
+
+        inquirer.prompt(
+            
+            [{
                 type: 'confirm',
                 name: 'confirmManager',
-                message: 'Does this employee have a manager?',
+                message: 'Does this suspect have a manager?',
                 default: true
             },
             {
                 type: 'list',
                 name: 'managerChoice',
-                message: 'Select a manager for the employee',
+                message: 'Select a manager for the suspect',
                 choices: managerArr,
                 when: ({ confirmManager }) => {
                     if (confirmManager) {
@@ -278,30 +349,22 @@ const addEmployee = () => {
                 }
             }]
         )
-            .then(({ fNameInput, lNameInput, roleChoice, managerChoice }) => {
-
-                let rolesId;
-                response.forEach((roles) => {
-                    if (
-                        roleChoice === roles.title
-                    ) {
-                        rolesId = roles.id;
-                    }
-                });
+            .then((answer) => {
 
                 let manId;
-                response.forEach((employee) => {
+                response.forEach((suspect) => {
                     if (
-                        managerChoice === employee.manager_id
+                        answer.managerChoice === suspect.manager_id
                     ) {
-                        manId = employee.id;
+                        manId = suspect.id;
                     }
                 });
+                
 
-                const employeeSql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`
+                const suspectSql = `INSERT INTO suspect (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`
                 const params = [fNameInput, lNameInput, rolesId, manId]
                 // Query database
-                db.query(employeeSql, params, function (err, results) {
+                db.query(suspectSql, params, function (err, results) {
                     //console.table(results)
                     return promptInit();
                 });
@@ -313,40 +376,41 @@ const addEmployee = () => {
     })
 };
 
-const updateEmployeeRole = () => {
-    let empSql = `SELECT * FROM employee`;
+//UPDATE  ROLE
+const updatesuspectRole = () => {
+    let empSql = `SELECT * FROM suspect`;
 
     db.query(empSql, (err, response) => {
-        let employeeArr = [];
-        response.forEach((employee) => { employeeArr.push(`${employee.first_name} ${employee.last_name}`); });
+        let suspectArr = [];
+        response.forEach((suspect) => { suspectArr.push(`${suspect.first_name} ${suspect.last_name}`); });
 
         inquirer.prompt(
             {
                 type: 'list',
-                name: 'employeeChoice',
-                message: 'Select an employee you which to update',
-                choices: employeeArr
+                name: 'suspectChoice',
+                message: 'Select an suspect you which to update',
+                choices: suspectArr
             }
 
         )
             .then((answer) => {
 
-                let employeeId;
-                response.forEach((employee) => {
+                let suspectId;
+                response.forEach((suspect) => {
                     if (
-                        answer.employeeChoice === `${employee.first_name} ${employee.last_name}`
+                        answer.suspectChoice === `${suspect.first_name} ${suspect.last_name}`
                     ) {
-                        employeeId = employee.id;
+                        suspectId = suspect.id;
                     }
 
                 });
 
-                const sql = `Update employee SET employee.role_id = ? WHERE employee.id = ?`
-                const params = [employeeId]
+                const sql = `Update suspect SET suspect.role_id = ? WHERE suspect.id = ?`
+                const params = [suspectId]
                 // Query database
                 db.query(sql, params, function (err, results) {
                     //console.table(results)
-                    return askRole(employeeId);
+                    return askRole(suspectId);
                 });
                 // Default response for any other request (Not Found)
                 app.use((req, res) => {
@@ -357,7 +421,8 @@ const updateEmployeeRole = () => {
 
 };
 
-const askRole = (employeeId) => {
+//UPDATE  ROLE CONTINUED
+const askRole = (suspectId) => {
     let roleSql = `SELECT * FROM roles`;
 
     db.query(roleSql, (err, response) => {
@@ -385,8 +450,8 @@ const askRole = (employeeId) => {
 
                 });
 
-                const sql = `Update employee SET employee.role_id = ? WHERE employee.id = ?`
-                const params = [rolesId, employeeId]
+                const sql = `Update suspect SET suspect.role_id = ? WHERE suspect.id = ?`
+                const params = [rolesId, suspectId]
                 // Query database
                 db.query(sql, params, function (err, results) {
                     //console.table(results)

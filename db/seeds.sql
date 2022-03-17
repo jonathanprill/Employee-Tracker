@@ -1,22 +1,22 @@
-INSERT INTO department (department_name)
-VALUES ("Management"),
-       ("Sales"),
-       ("Engineering");
+INSERT INTO crew (crew_name)
+VALUES ("Junior Crew"),
+       ("Soprano Crew"),
+       ("Curto Crew");
 
 
 
 
 
 
-INSERT INTO roles (title, salary, department_id)
-VALUES ("Engineer", 90000, 3),
-       ("Salesman", 80000, 2),
-       ("Manager", 120000, 1);
+INSERT INTO roles (title, salary, crew_id)
+VALUES ("Capo", 90000, 3),
+       ("Soldier", 70000, 2),
+       ("Boss", 150000, 1);
 
 
 
 
-INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ("John", "Smith", 1, 2),
-       ("Brad", "Dallas", 3, NULL),
-       ("Pauli", "Brock", 2, 2);
+INSERT INTO suspect (first_name, last_name, role_id, manager_id)
+VALUES ("Richie", "Aprile", 3, 2),
+       ("Pauli", "Gualtieri", 2, 3),
+       ("Tony", "Soprano", 1, NULL);
