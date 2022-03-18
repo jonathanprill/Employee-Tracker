@@ -29,14 +29,3 @@ CREATE TABLE suspect (
   FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL
 );
 
--- WITH RECURSIVE Emp_CTE (id, first_name, last_name, manager_id, Manager_name, namepath)
--- AS (
---     SELECT id, first_name, last_name, manager_id, cast(NULL as varchar), first_name as namepath
---     FROM suspect
---     WHERE manager_id IS NULL
---     UNION ALL 
---       SELECT e.id, e.first_name, e.last_name, e.manager_id, Emp_CTE.first_name
---       , Emp_CTE.namepath || '/' || e.Name 
---       FROM suspect e
---       INNER JOIN Emp_CTE ON Emp_CTE.id = e.manager_id
--- );

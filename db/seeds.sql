@@ -5,14 +5,10 @@ VALUES ("Junior Crew"),
 
 
 
-
-
-
 INSERT INTO roles (title, salary, crew_id)
 VALUES ("Capo", 90000, 3),
        ("Soldier", 70000, 2),
        ("Boss", 150000, 1);
-
 
 
 
